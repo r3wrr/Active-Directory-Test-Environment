@@ -41,9 +41,23 @@ foreach ($user in $users) {
         $i++
     }
 
+
     # Generowanie UPN
-    $userPrincipalName = "$samAccountName@homelab.local" 
+	$alternativeDomain = "recondrone7gmail.onmicrosoft.com"
+    $userPrincipalName = "$samAccountName" 
+    $forest = Get-ADForest
+	$validSuffixes = @($forest.RootDomain) + $forest.UPNSuffixes
+
+	# Sprawdzanie, czy podana domena jest na liście
+	if ($validSuffixes -contains $alternativeDomain) {
+		$userPrincipalName = "$samAccountName@$alternativeDomain"
+		Write-Host "Sukces: Sufiks jest poprawny ($userPrincipalName)" -ForegroundColor Green
     
+	
+	} else {
+		throw "BŁĄD: Sufiks UPN '$alternativeDomain' nie jest zarejestrowany w Active Directory!"
+	}
+	
     # Tymczasowe bezpieczne hasło
     $securePassword = ConvertTo-SecureString "Start1234!" -AsPlainText -Force
 	
